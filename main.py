@@ -1,5 +1,7 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QMainWindow, QDesktopWidget, QLabel, QPushButton
+from PyQt5.QtWidgets import (
+    QApplication, QMainWindow, QDesktopWidget, QLabel, QPushButton, QDialog, QVBoxLayout, QLineEdit
+)
 from PyQt5.QtGui import QIcon, QPainter, QPen, QColor, QFont, QPixmap
 from PyQt5.QtCore import Qt
 
@@ -17,23 +19,28 @@ class App(QMainWindow):
         self.setWindowTitle(self.title)
         self.setFixedSize(800, 600)
         self.center()
-        try:
-            self.setWindowIcon(QIcon('animals.ico'))
-        except Exception as e:
-            print(f"Error loading window icon: {e}")
-
+        self.setWindowIcon(QIcon('animals.ico'))
+        
         # Add navigation bar tabs
         self.addNavBarTabs()
 
         # Add header label
         self.addHeaderLabel()
 
-        # Initialize default content
-        self.updateHeaderText("                                     Date                   Vaccine                Action")
+        # Add the create button
+        self.addCircleButton()
+
+        # Set default to Vaccinations
+        self.onTabClicked(self.findChild(QPushButton, "vaccinations_tab"), "Vaccinations")
 
         self.show()
+    
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
-    # Add navigation bar tabs
     def addNavBarTabs(self):
         # Fonts for the navigation bar labels
         nav_font = QFont()
@@ -42,6 +49,7 @@ class App(QMainWindow):
 
         # Tab 1 - Vaccinations
         vaccinations_tab = QPushButton("Vaccinations", self)
+        vaccinations_tab.setObjectName("vaccinations_tab")  # Assign an object name for identification
         vaccinations_tab.setGeometry(80, 358, 150, 30)
         vaccinations_tab.setFont(nav_font)
         vaccinations_tab.setStyleSheet("""
@@ -52,7 +60,7 @@ class App(QMainWindow):
             text-align: center;
         """)
         vaccinations_tab.clicked.connect(lambda: self.onTabClicked(vaccinations_tab, "Vaccinations"))
-        
+
         # Tab 2 - Vet Visits
         vet_visits_tab = QPushButton("Vet Visits", self)
         vet_visits_tab.setGeometry(80, 408, 150, 30)
@@ -65,7 +73,7 @@ class App(QMainWindow):
             text-align: center;
         """)
         vet_visits_tab.clicked.connect(lambda: self.onTabClicked(vet_visits_tab, "Vet Visits"))
-        
+
         # Tab 3 - Medication
         medication_tab = QPushButton("Medication", self)
         medication_tab.setGeometry(80, 457, 150, 30)
@@ -79,23 +87,19 @@ class App(QMainWindow):
         """)
         medication_tab.clicked.connect(lambda: self.onTabClicked(medication_tab, "Medication"))
 
-    # Add header label
     def addHeaderLabel(self):
         self.header_label = QLabel(self)
         self.header_label.setStyleSheet("color: #D9D9D9; font-size: 14px;")
         self.header_label.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
 
-    # Update header text
     def updateHeaderText(self, text):
         self.header_text = text
-        self.update() 
+        self.update()
 
     def getHeaderText(self):
         return self.header_text if hasattr(self, 'header_text') else "Default Header"
 
-    # Tab click handler
     def onTabClicked(self, button, tab_name):
-        # Reset the style of the previously active button
         if self.active_button:
             self.active_button.setStyleSheet("""
                 color: #2F4156; 
@@ -104,8 +108,6 @@ class App(QMainWindow):
                 padding: 5px;
                 text-align: center;
             """)
-
-        # Set the new active button style
         button.setStyleSheet("""
             color: #FFFFFF; 
             background-color: #567C8D; 
@@ -113,63 +115,114 @@ class App(QMainWindow):
             padding: 5px;
             text-align: center;
         """)
-
-        # Update header text based on tab clicked
         if tab_name == "Vaccinations":
             self.updateHeaderText("                                     Date                   Vaccine                Action")
         elif tab_name == "Vet Visits":
             self.updateHeaderText("                                     Date                  Remarks               Action")
         elif tab_name == "Medication":
             self.updateHeaderText("                                 Date          Medication        x/day        Action")
-
-        # Set the clicked button as the active one
         self.active_button = button
 
-    # centers window
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+    def addCircleButton(self):
+        self.circle_button = QPushButton(self)
+        self.circle_button.setFixedSize(60, 60)
+        self.circle_button.setStyleSheet("""
+            QPushButton {
+                background-color: #567C8D;
+                border-radius: 30px;
+                border: 2px solid #D9D9D9;
+            }
+            QPushButton:hover {
+                background-color: #6B92A2;
+            }
+        """)
+        self.circle_button.setIcon(QIcon('create.png'))
+        self.circle_button.setIconSize(self.circle_button.size())
+        
 
-    # style sheet for components
+        self.repositionCircleButton()
+        self.circle_button.clicked.connect(self.showAddItemModal)
+
+    def repositionCircleButton(self):
+        dashboard_bottom_right_x = 747
+        dashboard_bottom_right_y = 550
+        button_x = dashboard_bottom_right_x - 70
+        button_y = dashboard_bottom_right_y - 70
+        self.circle_button.move(button_x, button_y)
+
+    def showAddItemModal(self):
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Add Item")
+        dialog.setFixedSize(400, 200)
+        dialog.setStyleSheet("background-color: #FFFFFF; color: #2F4156;")
+
+        layout = QVBoxLayout(dialog)
+
+        label = QLabel("DATE")
+        label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(label)
+
+        input_field = QLineEdit()
+        input_field.setPlaceholderText("Item details...")
+        input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+        layout.addWidget(input_field)
+
+        add_button = QPushButton("Add")
+        add_button.setStyleSheet("""
+            QPushButton {
+                background-color: #567C8D;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #6B92A2;
+            }
+        """)
+
+        add_button.clicked.connect(lambda: self.addItem(input_field.text(), dialog))
+        layout.addWidget(add_button)
+
+        dialog.exec_()
+
+    def addItem(self, item_details, dialog):
+        if item_details.strip():
+            print(f"Item added: {item_details}")
+            dialog.accept()
+        else:
+            print("No details entered!")
+
+    
+
     def paintEvent(self, event):
         painter = QPainter(self)
-
-        # Outer box
         pen = QPen(QColor("#E5E4E2"), 0)
         painter.setPen(pen)
         painter.setBrush(QColor("#E5E4E2"))
         painter.drawRect(20, 210, 760, 359)
 
-        # Dashboard with notebook lines
         pen = QPen(QColor("#FFFFFF"), 0)
         painter.setPen(pen)
         painter.setBrush(QColor("#FFFFFF"))
         painter.drawRoundedRect(66, 276, 681, 275, 15.0, 15.0)
 
-        # Draw notebook lines inside the dashboard
-        pen.setColor(QColor("#D9D9D9"))  # Set the line color to a light gray
+        pen.setColor(QColor("#D9D9D9"))
         painter.setPen(pen)
+        line_spacing = 20
+        for y in range(286, 550, line_spacing):
+            painter.drawLine(66, y, 747, y)
 
-        # Calculate the spacing between the lines (you can adjust this for more/less lines)
-        line_spacing = 20  # Space between each line
-        for y in range(286, 550, line_spacing):  # Start drawing lines from y=286 to y=550 (inside the dashboard area)
-            painter.drawLine(66, y, 747, y)  # Draw a line from x=66 to x=747 (covering the full width of the dashboard)
-
-        # Nav bar
         pen = QPen(QColor("#D9D9D9"), 0)
         painter.setPen(pen)
         painter.setBrush(QColor("#D9D9D9"))
-        painter.drawRoundedRect(66, 276, 165, 276.88, 15.0, 15.0)
+        painter.drawRoundedRect(66, 276, 165, 276, 15.0, 15.0)
 
-        # Header
         pen = QPen(QColor("#567C8D"), 0)
         painter.setPen(pen)
         painter.setBrush(QColor("#567C8D"))
-        painter.drawRoundedRect(66, 276, 681, 38.88, 0.0, 15.0)
+        painter.drawRoundedRect(66, 276, 681, 38, 0.0, 15.0)
 
-        # Draw header text
         font_header = QFont()
         font_header.setPointSize(12)
         font_header.setBold(True)
@@ -177,29 +230,24 @@ class App(QMainWindow):
         painter.setPen(QColor("#FFFFFF"))
         painter.drawText(76, 278, 661, 34, Qt.AlignLeft | Qt.AlignVCenter, self.getHeaderText())
 
-        # Dog and cat images
         dog_image = QPixmap("Dog.png")
         painter.drawPixmap(73, 7, 149, 259, dog_image)
         cat_image = QPixmap("Cat.png")
         painter.drawPixmap(170, -10, 260, 230, cat_image)
 
-        # Pet Care
         font_title2 = QFont()
         font_title2.setPointSize(13)
         painter.setFont(font_title2)
         painter.setPen(QColor("#ffffff"))
         painter.drawText(502, 67, 214, 36, Qt.AlignCenter, "PET CARE")
 
-        # 'Wall' - Background for dog and cat
-        pen = QPen(QColor("#e8e7e7"), 0)
-        painter.setPen(pen)
-        painter.setBrush(QColor("#e8e7e7"))
-        painter.setOpacity(0.3)
-        painter.drawRect(0, 170, self.width(), self.height())
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.repositionCircleButton()
 
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-    Main = App()
+    ex = App()
     sys.exit(app.exec_())
