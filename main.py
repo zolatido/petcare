@@ -13,6 +13,7 @@ class App(QMainWindow):
         self.setStyleSheet("background-color: #2F4156")
         self.header_label = None  # Placeholder for header label
         self.active_button = None  # To track the last clicked button
+        self.current_tab = "Vaccinations"  # Default tab
         self.initUI()
 
     def initUI(self):
@@ -20,7 +21,7 @@ class App(QMainWindow):
         self.setFixedSize(800, 600)
         self.center()
         self.setWindowIcon(QIcon('animals.ico'))
-        
+
         # Add navigation bar tabs
         self.addNavBarTabs()
 
@@ -34,7 +35,7 @@ class App(QMainWindow):
         self.onTabClicked(self.findChild(QPushButton, "vaccinations_tab"), "Vaccinations")
 
         self.show()
-    
+
     def center(self):
         qr = self.frameGeometry()
         cp = QDesktopWidget().availableGeometry().center()
@@ -49,7 +50,7 @@ class App(QMainWindow):
 
         # Tab 1 - Vaccinations
         vaccinations_tab = QPushButton("Vaccinations", self)
-        vaccinations_tab.setObjectName("vaccinations_tab")  # Assign an object name for identification
+        vaccinations_tab.setObjectName("vaccinations_tab")
         vaccinations_tab.setGeometry(80, 358, 150, 30)
         vaccinations_tab.setFont(nav_font)
         vaccinations_tab.setStyleSheet("""
@@ -100,6 +101,7 @@ class App(QMainWindow):
         return self.header_text if hasattr(self, 'header_text') else "Default Header"
 
     def onTabClicked(self, button, tab_name):
+        self.current_tab = tab_name  # Update the current active tab
         if self.active_button:
             self.active_button.setStyleSheet("""
                 color: #2F4156; 
@@ -138,7 +140,6 @@ class App(QMainWindow):
         """)
         self.circle_button.setIcon(QIcon('create.png'))
         self.circle_button.setIconSize(self.circle_button.size())
-        
 
         self.repositionCircleButton()
         self.circle_button.clicked.connect(self.showAddItemModal)
@@ -153,47 +154,173 @@ class App(QMainWindow):
     def showAddItemModal(self):
         dialog = QDialog(self)
         dialog.setWindowTitle("Add Item")
-        dialog.setFixedSize(400, 200)
+        dialog.setFixedSize(400, 250)
         dialog.setStyleSheet("background-color: #FFFFFF; color: #2F4156;")
 
         layout = QVBoxLayout(dialog)
 
-        label = QLabel("DATE")
-        label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        layout.addWidget(label)
+        # Common Date Label and Input
+        date_label = QLabel("DATE:")
+        date_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        layout.addWidget(date_label)
 
-        input_field = QLineEdit()
-        input_field.setPlaceholderText("Item details...")
-        input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
-        layout.addWidget(input_field)
+        date_input = QLineEdit()
+        date_input.setObjectName("date_input")
+        date_input.setPlaceholderText("Enter date (e.g., YYYY-MM-DD)...")
+        date_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+        layout.addWidget(date_input)
 
-        add_button = QPushButton("Add")
-        add_button.setStyleSheet("""
-            QPushButton {
-                background-color: #567C8D;
-                color: white;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 4px;
-            }
-            QPushButton:hover {
-                background-color: #6B92A2;
-            }
-        """)
+        # Tab-specific fields
+        if self.current_tab == "Vaccinations":
+            # Vaccination-specific fields
+            vaccine_label = QLabel("VACCINE:")
+            vaccine_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(vaccine_label)
 
-        add_button.clicked.connect(lambda: self.addItem(input_field.text(), dialog))
-        layout.addWidget(add_button)
+            vaccine_input = QLineEdit()
+            vaccine_input.setObjectName("vaccine_input")
+            vaccine_input.setPlaceholderText("Enter vaccine name...")
+            vaccine_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(vaccine_input)
+
+            add_button = QPushButton("Add")
+            add_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #567C8D;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #6B92A2;
+                }
+            """)
+            add_button.clicked.connect(lambda: self.addItem(date_input.text(), vaccine_input.text(), dialog))
+            layout.addWidget(add_button)
+
+        elif self.current_tab == "Vet Visits":
+            # Vet Visits-specific fields
+            remarks_label = QLabel("REMARKS:")
+            remarks_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(remarks_label)
+
+            remarks_input = QLineEdit()
+            remarks_input.setObjectName("remarks_input")
+            remarks_input.setPlaceholderText("Enter remarks...")
+            remarks_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(remarks_input)
+
+            add_button = QPushButton("Add")
+            add_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #567C8D;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #6B92A2;
+                }
+            """)
+            add_button.clicked.connect(lambda: self.addItem(date_input.text(), remarks_input.text(), dialog))
+            layout.addWidget(add_button)
+
+        elif self.current_tab == "Medication":
+            # Medication-specific fields
+            medication_label = QLabel("MEDICATION:")
+            medication_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(medication_label)
+
+            medication_input = QLineEdit()
+            medication_input.setObjectName("medication_input")
+            medication_input.setPlaceholderText("Enter medication name...")
+            medication_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(medication_input)
+
+            dosage_label = QLabel("DOSAGE:")
+            dosage_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(dosage_label)
+
+            dosage_input = QLineEdit()
+            dosage_input.setObjectName("dosage_input")
+            dosage_input.setPlaceholderText("Enter dosage...")
+            dosage_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(dosage_input)
+
+            add_button = QPushButton("Add")
+            add_button.setStyleSheet("""
+                QPushButton {
+                    background-color: #567C8D;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 4px;
+                }
+                QPushButton:hover {
+                    background-color: #6B92A2;
+                }
+            """)
+            add_button.clicked.connect(lambda: self.addItem(date_input.text(), medication_input.text(), dialog))
+            layout.addWidget(add_button)
 
         dialog.exec_()
 
-    def addItem(self, item_details, dialog):
-        if item_details.strip():
-            print(f"Item added: {item_details}")
+    def addItem(self, date, extra, dialog):
+        # Check if the input fields are empty
+        date_empty = not date.strip()
+        extra_empty = not extra.strip()
+
+        # Update the styles for the input fields
+        dialog.findChild(QLineEdit, "date_input").setStyleSheet(
+            "padding: 5px; border: 1px solid red; border-radius: 4px;" if date_empty else
+            "padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;"
+        )
+
+        # Check and update for the "Vaccinations" tab (vaccine input)
+        if self.current_tab == "Vaccinations":
+            vaccine_input = dialog.findChild(QLineEdit, "vaccine_input")
+            vaccine_empty = not vaccine_input.text().strip()
+            vaccine_input.setStyleSheet(
+                "padding: 5px; border: 1px solid red; border-radius: 4px;" if vaccine_empty else
+                "padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;"
+            )
+
+        # Check and update for the "Vet Visits" tab (remarks input)
+        elif self.current_tab == "Vet Visits":
+            remarks_input = dialog.findChild(QLineEdit, "remarks_input")
+            remarks_empty = not remarks_input.text().strip()
+            remarks_input.setStyleSheet(
+                "padding: 5px; border: 1px solid red; border-radius: 4px;" if remarks_empty else
+                "padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;"
+            )
+
+        # Check and update for the "Medication" tab (medication input and dosage input)
+        elif self.current_tab == "Medication":
+            medication_input = dialog.findChild(QLineEdit, "medication_input")
+            medication_empty = not medication_input.text().strip()
+            dosage_input = dialog.findChild(QLineEdit, "dosage_input")
+            dosage_empty = not dosage_input.text().strip()
+
+            medication_input.setStyleSheet(
+                "padding: 5px; border: 1px solid red; border-radius: 4px;" if medication_empty else
+                "padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;"
+            )
+
+            dosage_input.setStyleSheet(
+                "padding: 5px; border: 1px solid red; border-radius: 4px;" if dosage_empty else
+                "padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;"
+            )
+
+        # Proceed if all fields are filled
+        if not date_empty and not extra_empty and (self.current_tab != "Vaccinations" or not vaccine_empty) and (self.current_tab != "Vet Visits" or not remarks_empty) and (self.current_tab != "Medication" or (not medication_empty and not dosage_empty)):
+            print(f"Item added - Date: {date}, Extra: {extra}")
             dialog.accept()
         else:
-            print("No details entered!")
+            print("Please fill out all fields!")
 
-    
+
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -240,7 +367,6 @@ class App(QMainWindow):
         painter.setFont(font_title2)
         painter.setPen(QColor("#ffffff"))
         painter.drawText(502, 67, 214, 36, Qt.AlignCenter, "PET CARE")
-
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
