@@ -13,6 +13,11 @@ class App(QMainWindow):
         self.title = "Pet Care"
         self.setStyleSheet("background-color: #2F4156")
         self.pet_data = []  # To store data
+        self.data_store = {
+            "Vaccination": [],
+            "Vet Visits": [],
+            "Medication": []
+        }
 
         self.initUI()
 
@@ -37,10 +42,10 @@ class App(QMainWindow):
         #create table to display data
         self.createTable()
 
-        # Add the left navigation bar
+        #add the left navigation bar
         self.addNavigationBar()
 
-        # Set the default header to "Vaccination"
+        #set the default header to "Vaccination"
         self.onNavButtonClick("Vaccination")
 
     #table for displaying added item / displays user input
@@ -50,26 +55,25 @@ class App(QMainWindow):
         self.table.setColumnCount(3)  
         self.table.setStyleSheet("background-color: #FFFFFF; border: 1px solid #D9D9D9;")
         
-        # Column widths 
-        self.table.setColumnWidth(0, 150)  # Date
-        self.table.setColumnWidth(1, 200)  # Vaccine / Remarks / Medicine
-        self.table.setColumnWidth(2, 100)  # Action (for buttons)
+        #column widths 
+        self.table.setColumnWidth(0, 150)  #Date
+        self.table.setColumnWidth(1, 200)  #Vaccine / Remarks / Medicine
+        self.table.setColumnWidth(2, 100)  #Action (for buttons)
 
-        # Column resize behavior
+        #clumn matic resize
         self.table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
-        # Size of the table
+        # dashboard table size
         self.table.setFixedSize(565, 277)  
         
-        # Position of the table
+        #position of the dashboard table
         self.table.move(200, 279)
 
-        # Hide row numbers
+        # hide row numbers
         self.table.verticalHeader().setVisible(False)
 
-        # No highlight
+        # remove highlifhgt
         self.table.setSelectionMode(QAbstractItemView.NoSelection)
-
 
 
     #Create Button
@@ -90,17 +94,10 @@ class App(QMainWindow):
         self.create_button.setIcon(QIcon('create.png'))
         self.create_button.setIconSize(self.create_button.size())
         self.create_button.clicked.connect(self.showAddItemModal)
+    
+        self.create_button.move(690, 215)
 
-        # Ensure the window size is correct
-        window_width = self.width()
-        window_height = self.height()
-
-        # Position the button at the bottom-right of the window
-        button_x = window_width - self.create_button.width() - 20  
-        button_y = window_height - self.create_button.height() - 20  
-        self.create_button.move(button_x, button_y)
-
-    # Update Table Headers based on selected category
+    #update table headers based on navbar
     def updateTableHeader(self, category):
         if category == "Vaccination":
             self.table.setColumnCount(3)  
@@ -116,100 +113,148 @@ class App(QMainWindow):
     #Modal for Create Button
     def showAddItemModal(self):
         dialog = QDialog(self)
-        dialog.setWindowTitle("Add Item")
-        dialog.setFixedSize(400, 250)
+        dialog.setWindowTitle(f"Add {self.selected_category} Item")
+        dialog.setFixedSize(400, 300)
         dialog.setStyleSheet("background-color: #FFFFFF; color: #2F4156;")
-
         layout = QVBoxLayout(dialog)
 
-         # Date Label and Input 
+        #common Date Input
         date_label = QLabel("DATE:")
         date_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(date_label)
 
-        # Use QDateEdit for the Date input
         date_input = QDateEdit(self)
         date_input.setObjectName("date_input")
-        date_input.setDisplayFormat("yyyy-MM-dd")  
+        date_input.setDisplayFormat("yyyy-MM-dd")
         date_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
-        date_input.setDate(QDate.currentDate())  # Set the date to today's date
+        date_input.setDate(QDate.currentDate())
         layout.addWidget(date_input)
 
-        # Vaccine Label and Input
-        vaccine_label = QLabel("VACCINE:")
-        vaccine_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        layout.addWidget(vaccine_label)
+        # modal input per nav bar tab
+        if self.selected_category == "Vaccination":
+            label = QLabel("VACCINE:")
+            input_field = QLineEdit()
+            input_field.setPlaceholderText("Enter vaccine name...")
 
-        vaccine_input = QLineEdit()
-        vaccine_input.setObjectName("vaccine_input")
-        vaccine_input.setPlaceholderText("Enter vaccine name...")
-        vaccine_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
-        layout.addWidget(vaccine_input)
+            layout.addWidget(label)
+            layout.addWidget(input_field)
 
-        # Add button
+        elif self.selected_category == "Vet Visits":
+            label = QLabel("REMARKS:")
+            input_field = QLineEdit()
+            input_field.setPlaceholderText("Enter visit remarks...")
+
+            layout.addWidget(label)
+            layout.addWidget(input_field)
+
+        elif self.selected_category == "Medication":
+            label = QLabel("MEDICINE: ")
+            label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            input_field = QLineEdit()
+            input_field.setPlaceholderText("Enter medicine name...")
+
+            layout.addWidget(label)
+            layout.addWidget(input_field)
+
+            dosage_label = QLabel("DOSAGE (x/day): ")
+            dosage_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            dosage_input = QLineEdit()
+            dosage_input.setPlaceholderText("Enter dosage frequency...")
+            dosage_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+
+            layout.addWidget(dosage_label)
+            layout.addWidget(dosage_input)
+
+        label.setStyleSheet("font-size: 14px; font-weight: bold;")
+        input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+
+        # Add Button
         add_button = QPushButton("Add")
         add_button.setStyleSheet("""
-                QPushButton {
-                    background-color: #567C8D;
-                    color: white;
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: 4px;
-                }
-                QPushButton:hover {
-                    background-color: #6B92A2;
-                }
-            """)
-        
+            QPushButton {
+                background-color: #567C8D;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #6B92A2;
+            }
+        """)
+
         def validateAndAddItem():
-            # Check if the date or vaccine fields are empty
             is_valid = True
 
-            # Check if the date is empty
+            # Validate Date
             if date_input.text().strip() == "":
                 date_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
                 is_valid = False
             else:
                 date_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
 
-            # Check if the vaccine name is empty
-            if vaccine_input.text().strip() == "":
-                vaccine_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
+            # Validate Main Input
+            if input_field.text().strip() == "":
+                input_field.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
                 is_valid = False
             else:
-                vaccine_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+                input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
 
-            # If both fields are valid, add the item and close the dialog
+            # Validate Dosage
+            if self.selected_category == "Medication" and dosage_input.text().strip() == "":
+                dosage_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
+                is_valid = False
+            elif self.selected_category == "Medication":
+                dosage_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+
             if is_valid:
-                self.addItem(date_input.date().toString("yyyy-MM-dd"), vaccine_input.text())
-                dialog.accept()  # Close the dialog
-        
-       # Connect the "Add" button to the validation function
-        add_button.clicked.connect(validateAndAddItem)
+                if self.selected_category == "Medication":
+                    self.addItem(
+                        date_input.date().toString("yyyy-MM-dd"),
+                        input_field.text(),
+                        dosage_input.text()
+                    )
+                else:
+                    self.addItem(
+                        date_input.date().toString("yyyy-MM-dd"),
+                        input_field.text()
+                    )
+                dialog.accept()
 
+        add_button.clicked.connect(validateAndAddItem)
         layout.addWidget(add_button)
 
-        # opens the modal
         dialog.exec_()
 
-    def addItem(self, date, vaccine, dosage=None):
-        """Add a new row to the table. If dosage is provided, use 4 columns, otherwise 3."""
+    def addItem(self, date, main_input, dosage=None):
+
+        # Save data to the category
+        if self.selected_category == "Medication":
+            self.data_store[self.selected_category].append({
+                "date": date,
+                "medicine": main_input,
+                "dosage": dosage
+            })
+        else:
+            self.data_store[self.selected_category].append({
+                "date": date,
+                "details": main_input
+            })
+
+        # Add the data to the table
         row_position = self.table.rowCount()
         self.table.insertRow(row_position)
-        self.table.setItem(row_position, 0, QTableWidgetItem(date))
+        self.table.setItem(row_position, 0, QTableWidgetItem(date))         #date
+        self.table.setItem(row_position, 1, QTableWidgetItem(main_input))   #2nd col - vacc|remarks|med
 
-        if dosage:  
-            self.table.setItem(row_position, 1, QTableWidgetItem(vaccine))  
-            self.table.setItem(row_position, 2, QTableWidgetItem(dosage))
-            
+        #for action buttons (edit and delete)
+        if dosage: 
+            self.table.setItem(row_position, 2, QTableWidgetItem(dosage))   #med tab - 3rd col | dosage
             self.table.setCellWidget(row_position, 3, self.createActionButtons(row_position))
         else:  
-            self.table.setItem(row_position, 1, QTableWidgetItem(vaccine))  
             self.table.setCellWidget(row_position, 2, self.createActionButtons(row_position))
 
-
     def createActionButtons(self, row_position):
-        """Creates action buttons (Edit/Delete) for the given row."""
         action_widget = QWidget(self)
         action_layout = QHBoxLayout(action_widget)
 
@@ -237,66 +282,97 @@ class App(QMainWindow):
 
     #for delete button, deletes the row
     def deleteRow(self, row_position):
-        """Delete the row at the given position."""
         self.table.removeRow(row_position)
 
-    #for edit button, edits the row data
     def editRow(self, row_position):
-        """Edit the row data at the given position."""
-        # Get current data from the row
+        #Get current data from the row
         current_date = self.table.item(row_position, 0).text()
-        current_vaccine = self.table.item(row_position, 1).text()
+        current_main_input = self.table.item(row_position, 1).text()
 
-        # Open the modal for editing
+        if self.selected_category == "Medication":
+            current_dosage = self.table.item(row_position, 2).text()
+
+        #open the modal for editing
         dialog = QDialog(self)
-        dialog.setWindowTitle("Edit Item")
-        dialog.setFixedSize(400, 250)
+        dialog.setWindowTitle(f"Edit {self.selected_category} Item")
+        dialog.setFixedSize(400, 300)
         dialog.setStyleSheet("background-color: #FFFFFF; color: #2F4156;")
 
         layout = QVBoxLayout(dialog)
 
-        # Date Label and Input
+        #Date Label and Input
         date_label = QLabel("DATE:")
         date_label.setStyleSheet("font-size: 14px; font-weight: bold;")
         layout.addWidget(date_label)
 
-        # Use QDateEdit for the Date input
         date_input = QDateEdit(self)
         date_input.setObjectName("date_input")
         date_input.setDisplayFormat("yyyy-MM-dd")
         date_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
-        date_input.setDate(QDate.fromString(current_date, "yyyy-MM-dd"))  # Set current date
+        date_input.setDate(QDate.fromString(current_date, "yyyy-MM-dd"))
         layout.addWidget(date_input)
 
-        # Vaccine Label and Input
-        vaccine_label = QLabel("VACCINE:")
-        vaccine_label.setStyleSheet("font-size: 14px; font-weight: bold;")
-        layout.addWidget(vaccine_label)
+        #ctegory navbar tabs
+        if self.selected_category == "Vaccination":
+            label = QLabel("VACCINE:")
+            input_field = QLineEdit(self)
+            input_field.setText(current_main_input)
+            input_field.setPlaceholderText("Enter vaccine name...")
+            label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(label)
+            input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(input_field)
 
-        vaccine_input = QLineEdit()
-        vaccine_input.setObjectName("vaccine_input")
-        vaccine_input.setText(current_vaccine)  # Set current vaccine name
-        vaccine_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
-        layout.addWidget(vaccine_input)
+        elif self.selected_category == "Vet Visits":
+            label = QLabel("REMARKS:")
+            input_field = QLineEdit(self)
+            input_field.setText(current_main_input)
+            input_field.setPlaceholderText("Enter visit remarks...")
+            label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(label)
+            input_field.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(input_field)
 
-        # Save button
+        elif self.selected_category == "Medication":
+            #medicine Name
+            med_label = QLabel("MEDICINE:")
+            med_input = QLineEdit(self)
+            med_input.setText(current_main_input)
+            med_input.setPlaceholderText("Enter medicine name...")
+
+            med_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(med_label)
+            med_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(med_input)
+
+            #dosage
+            dosage_label = QLabel("DOSAGE:")
+            dosage_input = QLineEdit(self)
+            dosage_input.setText(current_dosage)
+            dosage_input.setPlaceholderText("Enter dosage...")
+
+            dosage_label.setStyleSheet("font-size: 14px; font-weight: bold;")
+            layout.addWidget(dosage_label)
+            dosage_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            layout.addWidget(dosage_input)
+
+        #save Button
         save_button = QPushButton("Save Changes")
         save_button.setStyleSheet("""
-                QPushButton {
-                    background-color: #567C8D;
-                    color: white;
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: 4px;
-                }
-                QPushButton:hover {
-                    background-color: #6B92A2;
-                }
-            """)
-        
-        # Validation and Save
+            QPushButton {
+                background-color: #567C8D;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 4px;
+            }
+            QPushButton:hover {
+                background-color: #6B92A2;
+            }
+        """)
+
+        #Validation and Save
         def validateAndSave():
-            # Check if the inputs are valid
             is_valid = True
 
             if date_input.text().strip() == "":
@@ -305,71 +381,133 @@ class App(QMainWindow):
             else:
                 date_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
 
-            if vaccine_input.text().strip() == "":
-                vaccine_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
+            if self.selected_category != "Medication" and input_field.text().strip() == "":
+                input_field.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
                 is_valid = False
-            else:
-                vaccine_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+            elif self.selected_category == "Medication":
+                if med_input.text().strip() == "" or dosage_input.text().strip() == "":
+                    med_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
+                    dosage_input.setStyleSheet("padding: 5px; border: 1px solid red; border-radius: 4px;")
+                    is_valid = False
+                else:
+                    med_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
+                    dosage_input.setStyleSheet("padding: 5px; border: 1px solid #D9D9D9; border-radius: 4px;")
 
             if is_valid:
-                # Update table data
+                #Update table
                 self.table.setItem(row_position, 0, QTableWidgetItem(date_input.date().toString("yyyy-MM-dd")))
-                self.table.setItem(row_position, 1, QTableWidgetItem(vaccine_input.text()))
-                dialog.accept()  # Close the dialog
+                if self.selected_category == "Medication":
+                    self.table.setItem(row_position, 1, QTableWidgetItem(med_input.text()))
+                    self.table.setItem(row_position, 2, QTableWidgetItem(dosage_input.text()))
+                else:
+                    self.table.setItem(row_position, 1, QTableWidgetItem(input_field.text()))
+                dialog.accept()
 
         save_button.clicked.connect(validateAndSave)
         layout.addWidget(save_button)
 
-        # Open the modal
+        #Open the modal
         dialog.exec_()
 
 
     def addNavigationBar(self):
-        # Sidebar container
+        #sidebar container
         self.sidebar = QWidget(self)
         self.sidebar.setStyleSheet("background-color: #567C8D")
         self.sidebar.setGeometry(35, 280, 165, 275)
 
-        # Vaccination button
+        # My Pet's Info
+        pet_name_label = QLabel("My Pet's Info", self.sidebar)
+        pet_name_label.setStyleSheet("color: white; font-size: 16px; font-weight: bold;")
+        pet_name_label.move(35, 40)
+        
+        #vaccination tan
         self.vaccination_button = QPushButton("Vaccination", self.sidebar)
-        self.vaccination_button.setGeometry(0, 100, 200, 50)
+        self.vaccination_button.setGeometry(0, 90, 180, 50)
         self.vaccination_button.setStyleSheet("background-color: #567C8D; color: white; font-size: 16px;")
         self.vaccination_button.clicked.connect(lambda: self.onNavButtonClick("Vaccination"))
 
-        # Vet Visits button
+        #vet Visits tab
         self.vet_visits_button = QPushButton("Vet Visits", self.sidebar)
-        self.vet_visits_button.setGeometry(0, 150, 200, 50)
+        self.vet_visits_button.setGeometry(0, 140, 180, 50)
         self.vet_visits_button.setStyleSheet("background-color: #567C8D; color: white; font-size: 16px;")
         self.vet_visits_button.clicked.connect(lambda: self.onNavButtonClick("Vet Visits"))
 
-        # Medication button
+        #medication tab
         self.medication_button = QPushButton("Medication", self.sidebar)
-        self.medication_button.setGeometry(0, 200, 180, 50)
+        self.medication_button.setGeometry(0, 190, 180, 50)
         self.medication_button.setStyleSheet("background-color: #567C8D; color: white; font-size: 16px;")
         self.medication_button.clicked.connect(lambda: self.onNavButtonClick("Medication"))
 
     def onNavButtonClick(self, category):
+        #update the selected category
         self.selected_category = category
+
+        #Highlight the active button
+        buttons = [self.vaccination_button, self.vet_visits_button, self.medication_button]
+        for button in buttons:
+            button.setStyleSheet("background-color: #567C8D; color: white; font-size: 16px;")
+
+        if category == "Vaccination":
+            self.vaccination_button.setStyleSheet("background-color: #6B92A2; color: white; font-size: 16px;")
+        elif category == "Vet Visits":
+            self.vet_visits_button.setStyleSheet("background-color: #6B92A2; color: white; font-size: 16px;")
+        elif category == "Medication":
+            self.medication_button.setStyleSheet("background-color: #6B92A2; color: white; font-size: 16px;")
+
+        #update the table headers and content
         self.updateTableHeader(category)
 
-    # For other components 
+        #clear the table
+        self.table.setRowCount(0)
+
+        #put data the selected category
+        for item in self.data_store[category]:
+            row_position = self.table.rowCount()
+            self.table.insertRow(row_position)
+            self.table.setItem(row_position, 0, QTableWidgetItem(item["date"]))
+
+            if category == "Medication":
+                self.table.setItem(row_position, 1, QTableWidgetItem(item["medicine"]))
+                self.table.setItem(row_position, 2, QTableWidgetItem(item["dosage"]))
+                self.table.setCellWidget(row_position, 3, self.createActionButtons(row_position))
+            else:  # Vaccination or Vet Visits
+                self.table.setItem(row_position, 1, QTableWidgetItem(item["details"]))
+                self.table.setCellWidget(row_position, 2, self.createActionButtons(row_position))
+
+    def refreshTableData(self):
+        """Refresh the table with data"""
+        #vlear the current table
+        self.table.setRowCount(0)
+
+        #get data 
+        data = self.data_store.get(self.selected_category, [])
+
+        #put data in the table
+        for item in data:
+            if self.selected_category == "Medication":
+                self.addItem(item["date"], item["medicine"], item["dosage"])
+            else:
+                self.addItem(item["date"], item["details"])
+
+    #for other components 
     def paintEvent(self, event):
         painter = QPainter(self)
 
-        # PETCARE TEXT upper right
+        #PETCARE TEXT upper right
         PetCare = QFont()
         PetCare.setPointSize(13)
         painter.setFont(PetCare)
         painter.setPen(QColor("#ffffff"))
         painter.drawText(502, 67, 214, 36, Qt.AlignCenter, "PET CARE")
 
-        # Outer box
+        #Outer box
         pen = QPen(QColor("#E5E4E2"), 0)
         painter.setPen(pen)
         painter.setBrush(QColor("#E5E4E2"))
         painter.drawRoundedRect(20, 210, 760, 359, 10.0, 10.0)
 
-        # Dog and cat images
+        #Dog and cat images
         dog_image = QPixmap("Dog.png")
         painter.drawPixmap(73, 7, 149, 259, dog_image)
         cat_image = QPixmap("Cat.png")
